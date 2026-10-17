@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}Dashboard{% endblock %} · NovaMart Admin</title>
+  <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body class="dash">
+{% include "includes/icons.html" %}
+{% with u=request.resolver_match.url_name %}
+<div class="dash-shell">
+  <aside class="sidebar" aria-label="Dashboard navigation" id="sidebar">
+    <a class="brand" href="{% url 'dashboard:home' %}"><img src="{% static 'images/logo.svg' %}" alt="" width="32" height="32"><span>Nova<b>Mart</b></span><span class="tag">Admin</span></a>
+    <nav>
+      <div class="side-group">
+        <h2>Overview</h2>
+        <a href="{% url 'dashboard:home' %}" {% if u == 'home' %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-grid"/></svg>Dashboard</a>
+        <a href="{% url 'dashboard:analytics' %}" {% if u == 'analytics' %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-chart"/></svg>Analytics</a>
+        <a href="{% url 'dashboard:sales' %}" {% if u == 'sales' %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-rupee"/></svg>Sales data</a>
+      </div>
+      <div class="side-group">
+        <h2>Catalogue</h2>
+        <a href="{% url 'dashboard:products' %}" {% if 'product' in u %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-tag"/></svg>Products</a>
+        <a href="{% url 'dashboard:product_add' %}" {% if u == 'product_add' %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-upload"/></svg>Upload product</a>
+        <a href="{% url 'dashboard:categories' %}" {% if 'category' in u or u == 'categories' %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-layers"/></svg>Categories</a>
+      </div>
+      <div class="side-group">
+        <h2>Sales</h2>
+        <a href="{% url 'dashboard:orders' %}" {% if 'order' in u %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-package"/></svg>Orders</a>
+        <a href="{% url 'dashboard:customers' %}" {% if 'customer' in u %}aria-current="page"{% endif %}><svg class="icon"><use href="#i-users"/></svg>Customers</a>
+      </div>
+    </nav>
+    <div class="side-group push">
+      <a href="{% url 'catalog:home' %}"><svg class="icon"><use href="#i-home"/></svg>View storefront</a>
+      <a href="{% url 'admin:index' %}"><svg class="icon"><use href="#i-edit"/></svg>Django admin</a>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit"><svg class="icon"><use href="#i-logout"/></svg>Log out</button></form>
+    </div>
+  </aside>
+  <div class="dash-main">
+    <header class="topbar">
+      <button class="icon-btn side-toggle" type="button" data-side-toggle aria-label="Toggle navigation" aria-controls="sidebar"><svg class="icon"><use href="#i-menu"/></svg></button>
+      <h1>{% block heading %}Dashboard{% endblock %}</h1>
+      <span class="sp"></span>
+      <div class="me"><span class="nm">{{ user.display_name }}</span><span class="avatar" aria-hidden="true">{{ user.username|first|upper }}</span></div>
+    </header>
+    <main id="main" class="dash-content">
+      {% include "includes/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endwith %}
+<div class="toast-region" id="toast-region" aria-live="polite"></div>
+<script src="{% static 'js/main.js' %}"></script>
+{% block js %}{% endblock %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>

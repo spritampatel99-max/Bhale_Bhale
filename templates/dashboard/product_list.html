@@ -1,0 +1,28 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}Products{% endblock %}
+{% block heading %}Products{% endblock %}
+{% block content %}
+<div class="page-actions"><form class="filter-bar" method="get" style="margin:0">
+  <div class="f"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ q }}" placeholder="Name or SKU"></div>
+  <div class="f"><label for="cat">Category</label><select class="input select" id="cat" name="category"><option value="">All</option>{% for c in categories %}<option value="{{ c.pk }}" {% if category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+  <div class="f"><label for="state">Show</label><select class="input select" id="state" name="state"><option value="">All</option><option value="active" {% if state == 'active' %}selected{% endif %}>Active</option><option value="inactive" {% if state == 'inactive' %}selected{% endif %}>Inactive</option><option value="low" {% if state == 'low' %}selected{% endif %}>Low / no stock</option></select></div>
+  <button class="btn btn-dark btn-sm" type="submit">Filter</button>
+</form><a class="btn btn-primary" href="{% url 'dashboard:product_add' %}"><svg class="icon"><use href="#i-plus"/></svg>Add product</a></div>
+<div class="table-wrap"><table class="table">
+  <thead><tr><th>Product</th><th>Category</th><th class="num">Price</th><th class="num">Stock</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for p in page %}
+  <tr>
+    <td><div class="row" style="flex-wrap:nowrap"><img class="thumb" src="{{ p.image_url }}" alt=""><div><a href="{% url 'dashboard:product_edit' p.pk %}"><strong>{{ p.name }}</strong></a><div class="muted small">{{ p.sku }}{% if p.is_featured %} &middot; Featured{% endif %}</div></div></div></td>
+    <td>{{ p.category.name }}</td>
+    <td class="num">{{ p.price|inr }}{% if p.has_discount %}<div class="muted small"><s>{{ p.original_price|inr }}</s></div>{% endif %}</td>
+    <td class="num"><span class="stock-pill {% if p.stock == 0 %}out{% elif p.is_low_stock %}low{% endif %}">{{ p.stock }}</span></td>
+    <td>{% if p.is_active %}<span class="badge ok">Active</span>{% else %}<span class="badge muted">Inactive</span>{% endif %}</td>
+    <td><div class="row-actions"><a class="btn btn-sm" href="{% url 'dashboard:product_edit' p.pk %}">Edit</a>
+      <form method="post" action="{% url 'dashboard:product_delete' p.pk %}" data-confirm="Delete '{{ p.name|escapejs }}'? Products with orders are deactivated instead.">{% csrf_token %}<button class="btn btn-sm btn-ghost" type="submit" aria-label="Delete {{ p.name }}"><svg class="icon"><use href="#i-trash"/></svg></button></form></div></td>
+  </tr>
+  {% empty %}<tr><td colspan="6" class="center muted" style="padding:2rem">No products match your filters.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

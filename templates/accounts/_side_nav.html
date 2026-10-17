@@ -1,0 +1,6 @@
+<nav class="side-nav" aria-label="Account">
+  <a href="{% url 'accounts:account' %}" {% if active == 'profile' %}aria-current="page"{% endif %}>Profile</a>
+  <a href="{% url 'orders:history' %}" {% if active == 'orders' %}aria-current="page"{% endif %}>Orders</a>
+  <a href="{% url 'accounts:addresses' %}" {% if active == 'addresses' %}aria-current="page"{% endif %}>Addresses</a>
+  <form method="post" action="{% url 'accounts:logout' %}" style="display:contents">{% csrf_token %}<button type="submit">Log out</button></form>
+</nav>

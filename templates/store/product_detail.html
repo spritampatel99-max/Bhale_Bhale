@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}{{ product.name }} · NovaMart{% endblock %}
+{% block meta_description %}{{ product.description|truncatechars:150 }}{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+    <li><a href="{% url 'catalog:home' %}">Home</a></li>
+    <li><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
+    <li aria-current="page">{{ product.name }}</li>
+  </ol></nav>
+
+  <div class="detail">
+    <div class="gallery">
+      <div class="stage"><img data-stage src="{{ gallery.0.url }}" alt="{{ gallery.0.alt }}" onerror="this.onerror=null;this.src='{% static 'images/placeholders/product.svg' %}'"></div>
+      {% if gallery|length > 1 %}
+      <div class="thumbs" role="group" aria-label="Product photos">
+        {% for g in gallery %}<button type="button" data-thumb="{{ g.url }}" data-alt="{{ g.alt }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show photo {{ forloop.counter }}"><img src="{{ g.url }}" alt=""></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-info">
+      <a class="muted small" href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+      <h1>{{ product.name }}</h1>
+      {% if product.rating %}
+      <p class="rating" title="Demonstration rating"><span class="stars" style="--pct: {{ product.rating_percent }}%" role="img" aria-label="{{ product.rating }} out of 5"></span>{{ product.rating }} &middot; {{ product.rating_count }} demo ratings</p>
+      {% endif %}
+      <div class="price-row">
+        <span class="price">{{ product.price|inr }}</span>
+        {% if product.has_discount %}<span class="price-was">{{ product.original_price|inr }}</span><span class="flag">{{ product.discount_percent }}% off</span>{% endif %}
+      </div>
+      <p class="small muted">Inclusive of all taxes. Delivery &#8377;49, free above &#8377;999.</p>
+
+      <div class="buy-box">
+        {% if product.stock > 0 %}
+          <p class="stock-note {% if product.is_low_stock %}low{% else %}in{% endif %}">
+            {% if product.is_low_stock %}Hurry, only {{ product.stock }} left in stock{% else %}In stock{% endif %}
+          </p>
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'cart:add' product.pk %}" data-cart-add>
+            {% csrf_token %}
+            <div class="buy-row">
+              <div class="qty" data-stepper>
+                <button type="button" data-step-down aria-label="Decrease quantity"><svg class="icon"><use href="#i-minus"/></svg></button>
+                <input type="number" name="quantity" value="1" min="1" max="{{ max_qty }}" aria-label="Quantity">
+                <button type="button" data-step-up aria-label="Increase quantity"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg grow"><svg class="icon"><use href="#i-cart"/></svg>Add to cart</button>
+            </div>
+          </form>
+          {% else %}
+          <a class="btn btn-primary btn-lg btn-block" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Sign in to add to cart</a>
+          {% endif %}
+        {% else %}
+          <p class="stock-note out">Currently out of stock</p>
+          <button class="btn btn-lg btn-block" type="button" disabled>Out of stock</button>
+        {% endif %}
+      </div>
+
+      <h2 style="font-size:1.1rem">About this product</h2>
+      <p class="desc">{{ product.description|linebreaksbr|default:"No description yet." }}</p>
+      <dl class="meta-list">
+        <dt>Category</dt><dd><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></dd>
+        <dt>SKU</dt><dd>{{ product.sku }}</dd>
+        <dt>Availability</dt><dd>{% if product.stock > 0 %}{{ product.stock }} in stock{% else %}Sold out{% endif %}</dd>
+      </dl>
+    </div>
+  </div>
+
+  {% if related %}
+  <section class="section" aria-labelledby="rel-title">
+    <div class="section-head"><h2 id="rel-title">You may also like</h2></div>
+    <div class="product-grid">{% for product in related %}{% include "includes/product_card.html" %}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block js %}<script src="{% static 'js/product.js' %}"></script>{% endblock %}

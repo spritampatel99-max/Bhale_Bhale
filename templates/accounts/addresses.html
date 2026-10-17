@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Addresses · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li><a href="{% url 'accounts:account' %}">My account</a></li><li aria-current="page">Addresses</li></ol></nav>
+  <div class="account-layout">
+    {% include "accounts/_side_nav.html" with active="addresses" %}
+    <div>
+      <div class="row between" style="margin-bottom:1rem"><h1 style="font-size:1.8rem;margin:0">Shipping addresses</h1><a class="btn btn-dark" href="{% url 'accounts:address_add' %}"><svg class="icon"><use href="#i-plus"/></svg>Add address</a></div>
+      <div class="address-grid">
+        {% for a in addresses %}
+        <div class="address-card">
+          <div class="row between"><strong>{{ a.label }}</strong>{% if a.is_default %}<span class="badge ok">Default</span>{% endif %}</div>
+          <p style="margin:.6rem 0 1rem">{{ a.full_name }}<br>{{ a.line1 }}{% if a.line2 %}, {{ a.line2 }}{% endif %}<br>{{ a.city }}, {{ a.state }} {{ a.postal_code }}<br>{{ a.phone }}</p>
+          <div class="row">
+            <a class="btn btn-sm" href="{% url 'accounts:address_edit' a.pk %}">Edit</a>
+            <form method="post" action="{% url 'accounts:address_delete' a.pk %}" data-confirm="Remove this address?">{% csrf_token %}<button class="btn btn-sm btn-ghost" type="submit">Remove</button></form>
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="grid-column:1/-1"><div class="art"><svg class="icon"><use href="#i-pin"/></svg></div><h2>No saved addresses</h2><p>Add one to speed up checkout.</p></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

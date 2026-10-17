@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}NovaMart: Find the good stuff{% endblock %}
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container hero-inner">
+    <div>
+      <h1 id="hero-title">Find the good stuff.</h1>
+      <p class="lead">Headphones that sound right, sneakers that feel right, and a notebook for every idea. Six departments, fair prices, one cart.</p>
+      <div class="cta">
+        <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Shop all products <svg class="icon"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-ghost btn-lg" href="{% url 'catalog:list' %}?sort=popular">See what's popular</a>
+      </div>
+      <div class="hero-points">
+        <span><svg class="icon"><use href="#i-truck"/></svg>Free delivery over &#8377;999</span>
+        <span><svg class="icon"><use href="#i-refresh"/></svg>Easy cart &amp; checkout</span>
+      </div>
+    </div>
+    <div class="collage" aria-label="Featured products">
+      {% for p in hero_products %}
+      <a href="{{ p.get_absolute_url }}" aria-label="{{ p.name }}, {{ p.price|inr }}">
+        <img src="{{ p.image_url }}" alt="{{ p.name }}" {% if forloop.first %}fetchpriority="high"{% endif %}>
+        <span class="tag">{{ p.price|inr0 }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <section class="section" aria-label="Why shop with NovaMart">
+    <div class="benefits">
+      <div class="benefit"><span class="ico"><svg class="icon"><use href="#i-bolt"/></svg></span><div><h3>Quick ordering</h3><p>Add to cart and check out in a few taps.</p></div></div>
+      <div class="benefit"><span class="ico"><svg class="icon"><use href="#i-truck"/></svg></span><div><h3>Free delivery</h3><p>On every order above &#8377;999.</p></div></div>
+      <div class="benefit"><span class="ico"><svg class="icon"><use href="#i-shield"/></svg></span><div><h3>Safe demo checkout</h3><p>No real card details are ever collected.</p></div></div>
+      <div class="benefit"><span class="ico"><svg class="icon"><use href="#i-headset"/></svg></span><div><h3>Friendly support</h3><p>Write to support@novamart.example.</p></div></div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cats-title">
+    <div class="section-head"><div><h2 id="cats-title">Shop by category</h2></div><a class="see-all" href="{% url 'catalog:categories' %}">All categories <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+    <div class="cat-tiles">
+      {% for c in categories %}
+      <a class="cat-tile" href="{{ c.get_absolute_url }}"><img src="{{ c.image_url }}" alt="" loading="lazy"><span>{{ c.name }}</span></a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="trend-title">
+    <div class="section-head"><div><h2 id="trend-title">Trending now</h2><p>What shoppers have been adding over the last 30 days.</p></div><a class="see-all" href="{% url 'catalog:list' %}?sort=popular">View more <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+    <div class="product-grid">{% for product in trending %}{% include "includes/product_card.html" %}{% empty %}<p class="muted">Products will appear here soon.</p>{% endfor %}</div>
+  </section>
+
+  {% if offers %}
+  <section class="section" aria-labelledby="deals-title">
+    <div class="deal-band">
+      <div><h2 id="deals-title">Special offers</h2><p>Marked-down picks while stock lasts. Prices are already reduced.</p><a class="btn btn-dark" href="{% url 'catalog:list' %}?sort=price_asc">Browse by price</a></div>
+      <div class="product-grid">{% for product in offers %}{% include "includes/product_card.html" %}{% endfor %}</div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="section" aria-labelledby="best-title">
+    <div class="section-head"><div><h2 id="best-title">Best sellers</h2><p>The all-time favourites in our order history.</p></div></div>
+    <div class="product-grid">{% for product in best_sellers %}{% include "includes/product_card.html" %}{% endfor %}</div>
+  </section>
+
+  <section class="section" aria-labelledby="new-title">
+    <div class="section-head"><div><h2 id="new-title">New arrivals</h2></div><a class="see-all" href="{% url 'catalog:list' %}?sort=newest">Newest first <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+    <div class="product-grid">{% for product in new_arrivals %}{% include "includes/product_card.html" %}{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

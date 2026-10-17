@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% load static store_tags %}
+{% block title %}Overview{% endblock %}
+{% block heading %}Overview{% endblock %}
+{% block content %}
+<p class="dash-sub">Live figures from the database. Revenue counts confirmed, processing, shipped and delivered orders only.</p>
+<section class="metrics" aria-label="Key metrics">
+  <div class="metric"><span class="k"><svg class="icon"><use href="#i-rupee"/></svg>Total revenue</span><span class="v">{{ revenue|inr0 }}</span><span class="s">Avg order {{ aov|inr0 }}</span></div>
+  <div class="metric blue"><span class="k"><svg class="icon"><use href="#i-package"/></svg>Total orders</span><span class="v">{{ orders_total }}</span><span class="s">{{ orders_pending }} pending ({{ pending_value|inr0 }}) &middot; {{ orders_cancelled }} cancelled</span></div>
+  <div class="metric green"><span class="k"><svg class="icon"><use href="#i-users"/></svg>Customers</span><span class="v">{{ customers }}</span><span class="s">Registered shoppers</span></div>
+  <div class="metric rose"><span class="k"><svg class="icon"><use href="#i-tag"/></svg>Active products</span><span class="v">{{ products_active }}</span><span class="s">{{ low_stock_count }} low or out of stock</span></div>
+</section>
+
+<div class="cols-3-2">
+  <section class="panel"><div class="panel-head"><h2>Sales activity, last 14 days</h2><span class="muted small">{{ last14_revenue|inr0 }} revenue</span></div>
+    <div class="chart-box short"><canvas id="activityChart" aria-label="Revenue per day for the last 14 days" role="img"></canvas><div class="chart-empty"><div><strong>No sales yet</strong><br>Orders will chart here.</div></div></div>
+  </section>
+  <section class="panel"><div class="panel-head"><h2>Best sellers</h2><a href="{% url 'dashboard:analytics' %}" class="small">Analytics</a></div>
+    {% for p in best_sellers %}<div class="row between" style="padding:.5rem 0;border-bottom:1px solid var(--line)"><span>{{ p.product_name }}</span><strong>{{ p.units }} sold</strong></div>{% empty %}<p class="muted">No sales yet.</p>{% endfor %}
+  </section>
+</div>
+
+<div class="cols-3-2">
+  <section class="panel"><div class="panel-head"><h2>Recent orders</h2><a class="small" href="{% url 'dashboard:orders' %}">All orders</a></div>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="num">Total</th></tr></thead><tbody>
+    {% for o in recent_orders %}<tr><td><a href="{% url 'dashboard:order_detail' o.order_number %}">{{ o.order_number }}</a><div class="muted small">{{ o.created_at|date:"d M, h:i A" }}</div></td><td>{{ o.customer.username }}</td><td><span class="badge {% status_class o.status %}">{{ o.get_status_display }}</span></td><td class="num">{{ o.total|inr }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="muted">No orders yet.</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+  <section class="panel"><div class="panel-head"><h2>Low stock</h2><a class="small" href="{% url 'dashboard:products' %}?state=low">View all</a></div>
+    {% for p in low_stock %}<div class="row between" style="padding:.5rem 0;border-bottom:1px solid var(--line)"><a href="{% url 'dashboard:product_edit' p.pk %}">{{ p.name }}</a><span class="stock-pill {% if p.stock == 0 %}out{% else %}low{% endif %}">{% if p.stock == 0 %}Out{% else %}{{ p.stock }} left{% endif %}</span></div>{% empty %}<p class="muted">All products are well stocked.</p>{% endfor %}
+  </section>
+</div>
+{{ activity|json_script:"activity-data" }}
+{% endblock %}
+{% block js %}<script src="{% static 'vendor/chart.umd.js' %}"></script>{% endblock %}

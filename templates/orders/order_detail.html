@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Order {{ order.order_number }} · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li><a href="{% url 'orders:history' %}">My orders</a></li><li aria-current="page">{{ order.order_number }}</li></ol></nav>
+  <div class="page-head row between">
+    <div><h1>Order {{ order.order_number }}</h1><p class="muted">Placed {{ order.created_at|date:"d M Y, h:i A" }}</p></div>
+    <div class="row"><span class="badge {% status_class order.status %}">{{ order.get_status_display }}</span><span class="badge {% status_class order.payment_status %}">Payment: {{ order.get_payment_status_display }}</span></div>
+  </div>
+  {% if order.status != 'cancelled' %}
+  <ol class="progress" aria-label="Order progress">
+    <li class="done">Placed</li>
+    <li {% if order.status in 'confirmed processing shipped delivered' %}class="done"{% endif %}>Confirmed</li>
+    <li {% if order.status in 'shipped delivered' %}class="done"{% endif %}>Shipped</li>
+    <li {% if order.status == 'delivered' %}class="done"{% endif %}>Delivered</li>
+  </ol>
+  {% endif %}
+  <div class="cart-layout" style="grid-template-columns:minmax(0,1fr) 340px">
+    <div class="card">{% include "orders/_order_items.html" %}</div>
+    <div class="stack">
+      <div class="card"><h3>Shipping to</h3><p style="margin:0"><strong>{{ order.ship_full_name }}</strong><br>{% for l in order.shipping_lines %}{{ l }}<br>{% endfor %}{{ order.ship_phone }}</p></div>
+      <div class="card"><h3>Payment</h3><p style="margin:0">{{ order.get_payment_method_display }}<br><span class="muted small">Demonstration only; no real charge was made.</span></p></div>
+      {% if order.can_customer_cancel %}
+      <form method="post" action="{% url 'orders:cancel' order.order_number %}" data-confirm="Cancel this order?">{% csrf_token %}<button class="btn btn-danger btn-block" type="submit">Cancel order</button></form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

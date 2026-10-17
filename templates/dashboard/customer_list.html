@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}Customers{% endblock %}
+{% block heading %}Customers{% endblock %}
+{% block content %}
+<form class="filter-bar" method="get">
+  <div class="f"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ q }}" placeholder="Username, name or email"></div>
+  <div class="f"><label for="state">Status</label><select class="input select" id="state" name="state"><option value="">All</option><option value="active" {% if state == 'active' %}selected{% endif %}>Active</option><option value="inactive" {% if state == 'inactive' %}selected{% endif %}>Deactivated</option></select></div>
+  <button class="btn btn-dark btn-sm" type="submit">Filter</button>
+</form>
+<div class="table-wrap"><table class="table"><thead><tr><th>Customer</th><th>Email</th><th>Joined</th><th class="num">Orders</th><th class="num">Spent</th><th>Status</th></tr></thead><tbody>
+{% for c in page %}
+<tr><td><a href="{% url 'dashboard:customer_detail' c.pk %}"><strong>{{ c.display_name }}</strong></a><div class="muted small">@{{ c.username }}</div></td><td>{{ c.email|default:"-" }}</td><td>{{ c.date_joined|date:"d M Y" }}</td><td class="num">{{ c.order_count }}</td><td class="num">{{ c.spent|inr }}</td>
+<td>{% if c.is_active %}<span class="badge ok">Active</span>{% else %}<span class="badge bad">Deactivated</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6" class="center muted" style="padding:2rem">No customers found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

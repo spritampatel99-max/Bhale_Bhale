@@ -1,0 +1,27 @@
+{% load static %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="{% url 'catalog:home' %}"><img src="{% static 'images/logo.svg' %}" alt="" width="36" height="36"><span>Nova<b>Mart</b></span></a>
+        <p>A demonstration store built with Django. Browse, add to cart and check out with a simulated payment. Nothing here is a real purchase.</p>
+      </div>
+      <div><h3>Shop</h3>
+        <a href="{% url 'catalog:list' %}">All products</a>
+        {% for c in nav_categories|slice:":4" %}<a href="{{ c.get_absolute_url }}">{{ c.name }}</a>{% endfor %}
+      </div>
+      <div><h3>Account</h3>
+        <a href="{% url 'accounts:account' %}">My account</a>
+        <a href="{% url 'orders:history' %}">My orders</a>
+        <a href="{% url 'cart:detail' %}">Cart</a>
+        {% if not user.is_authenticated %}<a href="{% url 'accounts:register' %}">Create account</a>{% endif %}
+      </div>
+      <div><h3>Contact</h3>
+        <a href="mailto:support@novamart.example">support@novamart.example</a>
+        <span>Mon&ndash;Sat, 10:00&ndash;18:00 IST</span>
+        <span>New Delhi, India (demo address)</span>
+      </div>
+    </div>
+    <div class="fine"><span>&copy; {% now "Y" %} NovaMart prototype. For learning purposes.</span><span>Prices in Indian rupees (&#8377;)</span></div>
+  </div>
+</footer>

@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% load static store_tags %}
+{% block title %}Analytics{% endblock %}
+{% block heading %}Sales analytics{% endblock %}
+{% block content %}
+<form class="filter-bar" method="get">
+  <div class="f"><label for="from">From</label><input class="input" type="date" id="from" name="from" value="{{ start|date:'Y-m-d' }}"></div>
+  <div class="f"><label for="to">To</label><input class="input" type="date" id="to" name="to" value="{{ end|date:'Y-m-d' }}"></div>
+  <button class="btn btn-dark btn-sm" type="submit">Apply range</button>
+  <span class="muted small" style="margin-left:auto">Revenue = confirmed, processing, shipped and delivered orders. Pending and cancelled are excluded.</span>
+</form>
+
+<section class="metrics" aria-label="Summary for selected range">
+  <div class="metric"><span class="k">Revenue</span><span class="v">{{ summary.revenue|inr0 }}</span><span class="s">{{ start|date:"d M" }} &ndash; {{ end|date:"d M Y" }}</span></div>
+  <div class="metric blue"><span class="k">Orders</span><span class="v">{{ summary.orders }}</span><span class="s">Counted as revenue</span></div>
+  <div class="metric green"><span class="k">Average order value</span><span class="v">{{ summary.aov|inr0 }}</span><span class="s">Revenue per order</span></div>
+  <div class="metric rose"><span class="k">Top category</span><span class="v" style="font-size:1.25rem">{% if top_category %}{{ top_category.category_name }}{% else %}&ndash;{% endif %}</span><span class="s">{% if top_category %}{{ top_category.revenue|inr0 }} in sales{% else %}No sales in range{% endif %}</span></div>
+</section>
+
+<section class="panel" style="margin-bottom:1rem">
+  <div class="panel-head"><h2>Revenue trend</h2>
+    <div class="seg" role="group" aria-label="Group by">
+      <button type="button" data-period="daily" aria-pressed="true">Daily</button><button type="button" data-period="weekly" aria-pressed="false">Weekly</button><button type="button" data-period="monthly" aria-pressed="false">Monthly</button>
+    </div></div>
+  <div class="chart-box"><canvas id="revenueChart" role="img" aria-label="Revenue over time"></canvas><div class="chart-empty"><div><strong>No sales in this range</strong><br>Try a wider date range.</div></div></div>
+</section>
+
+<div class="cols-2">
+  <section class="panel"><h2>Orders over time</h2><div class="chart-box short"><canvas id="ordersChart" role="img" aria-label="Orders over time"></canvas><div class="chart-empty"><div>No orders in range</div></div></div></section>
+  <section class="panel"><h2>Best-selling products (units)</h2><div class="chart-box short"><canvas id="productsChart" role="img" aria-label="Best selling products"></canvas><div class="chart-empty"><div>No sales in range</div></div></div></section>
+</div>
+<div class="cols-2">
+  <section class="panel"><h2>Category-wise sales</h2><div class="chart-box short"><canvas id="categoryChart" role="img" aria-label="Revenue by category"></canvas><div class="chart-empty"><div>No sales in range</div></div></div></section>
+  <section class="panel"><h2>Orders by status</h2><div class="chart-box short"><canvas id="statusChart" role="img" aria-label="Orders by status"></canvas><div class="chart-empty"><div>No orders in range</div></div></div></section>
+</div>
+
+<div class="cols-2">
+  <section class="panel"><h2>Top products</h2>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Product</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead><tbody>
+    {% for p in products %}<tr><td>{{ p.product_name }}</td><td class="num">{{ p.units }}</td><td class="num">{{ p.revenue|inr }}</td></tr>{% empty %}<tr><td colspan="3" class="muted">No sales in this range.</td></tr>{% endfor %}</tbody></table></div></section>
+  <section class="panel"><h2>Category sales</h2>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Category</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead><tbody>
+    {% for c in categories %}<tr><td>{{ c.category_name }}</td><td class="num">{{ c.units }}</td><td class="num">{{ c.revenue|inr }}</td></tr>{% empty %}<tr><td colspan="3" class="muted">No sales in this range.</td></tr>{% endfor %}</tbody></table></div></section>
+</div>
+
+<section class="panel"><div class="panel-head"><h2>Low-stock inventory ({{ low_stock_count }})</h2><a class="small" href="{% url 'dashboard:products' %}?state=low">Manage stock</a></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Product</th><th>Category</th><th class="num">In stock</th></tr></thead><tbody>
+  {% for p in low_stock %}<tr><td><a href="{% url 'dashboard:product_edit' p.pk %}">{{ p.name }}</a></td><td>{{ p.category.name }}</td><td class="num"><span class="stock-pill {% if p.stock == 0 %}out{% else %}low{% endif %}">{{ p.stock }}</span></td></tr>{% empty %}<tr><td colspan="3" class="muted">Nothing is running low.</td></tr>{% endfor %}</tbody></table></div></section>
+{{ chart|json_script:"analytics-data" }}
+{% endblock %}
+{% block js %}<script src="{% static 'vendor/chart.umd.js' %}"></script>{% endblock %}

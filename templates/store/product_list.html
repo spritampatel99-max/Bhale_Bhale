@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}{% if category %}{{ category.name }}{% elif q %}Search: {{ q }}{% else %}All products{% endif %} · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb">
+    <li><a href="{% url 'catalog:home' %}">Home</a></li>
+    {% if category %}<li><a href="{% url 'catalog:list' %}">Products</a></li><li aria-current="page">{{ category.name }}</li>
+    {% else %}<li aria-current="page">Products</li>{% endif %}
+  </ol></nav>
+  <div class="page-head">
+    <h1>{% if category %}{{ category.name }}{% elif q %}Results for &ldquo;{{ q }}&rdquo;{% else %}All products{% endif %}</h1>
+    {% if category and category.description %}<p class="muted">{{ category.description }}</p>{% endif %}
+  </div>
+
+  <div class="shop-layout">
+    <aside class="filters" id="filters" aria-label="Filters">
+      <form method="get">
+        <h2>Filter</h2>
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        {% if sort != 'newest' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <fieldset>
+          <legend>Category</legend>
+          <ul class="cat-list">
+            <li><a href="{% url 'catalog:list' %}{% if q %}?q={{ q|urlencode }}{% endif %}" {% if not selected_category %}aria-current="true"{% endif %}>All categories</a></li>
+            {% for c in categories %}
+            <li><a href="{{ c.get_absolute_url }}{% if q %}?q={{ q|urlencode }}{% endif %}" {% if selected_category == c.slug %}aria-current="true"{% endif %}>{{ c.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </fieldset>
+        <fieldset>
+          <legend>Price (&#8377;)</legend>
+          <div class="price-inputs">
+            <input class="input" type="number" name="min_price" min="0" step="1" inputmode="numeric" placeholder="Min" value="{{ min_price }}" aria-label="Minimum price">
+            <span aria-hidden="true">&ndash;</span>
+            <input class="input" type="number" name="max_price" min="0" step="1" inputmode="numeric" placeholder="Max" value="{{ max_price }}" aria-label="Maximum price">
+          </div>
+        </fieldset>
+        <fieldset><div class="check-row"><input class="check" type="checkbox" id="in_stock" name="in_stock" value="1" {% if in_stock %}checked{% endif %}><label for="in_stock">In stock only</label></div></fieldset>
+        <button class="btn btn-dark btn-block" type="submit">Apply filters</button>
+      </form>
+    </aside>
+
+    <section aria-label="Results">
+      <div class="toolbar">
+        <div class="row">
+          <button class="btn btn-sm filter-toggle" type="button" data-toggle="#filters" aria-expanded="false" aria-controls="filters"><svg class="icon"><use href="#i-sliders"/></svg>Filters</button>
+          <span class="muted">{{ total }} product{{ total|pluralize }}</span>
+        </div>
+        <form method="get" class="row">
+          {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+          {% if selected_category and not category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+          {% if min_price %}<input type="hidden" name="min_price" value="{{ min_price }}">{% endif %}
+          {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}">{% endif %}
+          {% if in_stock %}<input type="hidden" name="in_stock" value="1">{% endif %}
+          <label class="sr-only" for="sort">Sort by</label>
+          <select class="input select" id="sort" name="sort" onchange="this.form.submit()">
+            {% for key, label in sorts %}<option value="{{ key }}" {% if sort == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <noscript><button class="btn btn-sm" type="submit">Sort</button></noscript>
+        </form>
+      </div>
+
+      {% if q or min_price or max_price or in_stock %}
+      <div class="chips" aria-label="Active filters">
+        {% if q %}<a class="chip" href="{% qs_replace q='' page='' %}">Search: {{ q }} <svg class="icon"><use href="#i-x"/></svg></a>{% endif %}
+        {% if min_price %}<a class="chip" href="{% qs_replace min_price='' page='' %}">Min &#8377;{{ min_price }} <svg class="icon"><use href="#i-x"/></svg></a>{% endif %}
+        {% if max_price %}<a class="chip" href="{% qs_replace max_price='' page='' %}">Max &#8377;{{ max_price }} <svg class="icon"><use href="#i-x"/></svg></a>{% endif %}
+        {% if in_stock %}<a class="chip" href="{% qs_replace in_stock='' page='' %}">In stock <svg class="icon"><use href="#i-x"/></svg></a>{% endif %}
+      </div>
+      {% endif %}
+
+      {% if page.object_list %}
+      <div class="product-grid">{% for product in page %}{% include "includes/product_card.html" %}{% endfor %}</div>
+      {% include "includes/pagination.html" %}
+      {% else %}
+      <div class="empty-state">
+        <div class="art"><svg class="icon"><use href="#i-search"/></svg></div>
+        <h2>Nothing matched</h2>
+        <p>Try a different keyword, widen the price range or clear the filters.</p>
+        <a class="btn btn-dark" href="{% url 'catalog:list' %}">Clear all filters</a>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

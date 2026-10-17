@@ -1,0 +1,21 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Create account · NovaMart{% endblock %}
+{% block art_title %}Join NovaMart.{% endblock %}
+{% block art_text %}Save addresses, track orders and check out faster. It takes less than a minute.{% endblock %}
+{% block panel %}
+<h2>Create your account</h2>
+<p>Customer accounts only. Administrators are created by the store owner.</p>
+<form method="post" novalidate data-once>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+  {% for f in form %}
+  <div class="field {% if f.errors %}has-error{% endif %}">
+    <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+    {% if 'password' in f.name %}<div class="password-wrap">{{ f }}<button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false"><svg class="icon"><use href="#i-eye"/></svg></button></div>{% else %}{{ f }}{% endif %}
+    {% if f.help_text and f.name != 'password1' %}<div class="help">{{ f.help_text|safe }}</div>{% endif %}{{ f.errors }}
+  </div>
+  {% endfor %}
+  <button class="btn btn-primary btn-lg btn-block" type="submit">Create account</button>
+</form>
+<p class="auth-foot">Already registered? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+{% endblock %}

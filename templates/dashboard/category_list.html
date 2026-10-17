@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block heading %}Categories{% endblock %}
+{% block content %}
+<div class="page-actions"><p class="dash-sub" style="margin:0">Categories with products cannot be deleted. Deactivate them to hide them from the store.</p><a class="btn btn-primary" href="{% url 'dashboard:category_add' %}"><svg class="icon"><use href="#i-plus"/></svg>Add category</a></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Category</th><th class="num">Products</th><th>Status</th><th></th></tr></thead><tbody>
+{% for c in categories %}
+<tr><td><div class="row" style="flex-wrap:nowrap"><img class="thumb" src="{{ c.image_url }}" alt=""><div><strong>{{ c.name }}</strong><div class="muted small">/{{ c.slug }}</div></div></div></td>
+<td class="num">{{ c.product_count }}</td><td>{% if c.is_active %}<span class="badge ok">Active</span>{% else %}<span class="badge muted">Hidden</span>{% endif %}</td>
+<td><div class="row-actions"><a class="btn btn-sm" href="{% url 'dashboard:category_edit' c.pk %}">Edit</a>
+<form method="post" action="{% url 'dashboard:category_delete' c.pk %}" data-confirm="Delete category '{{ c.name|escapejs }}'?">{% csrf_token %}<button class="btn btn-sm btn-ghost" type="submit" aria-label="Delete {{ c.name }}"><svg class="icon"><use href="#i-trash"/></svg></button></form></div></td></tr>
+{% empty %}<tr><td colspan="4" class="center muted" style="padding:2rem">No categories yet.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

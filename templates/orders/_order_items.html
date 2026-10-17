@@ -1,0 +1,17 @@
+{% load store_tags %}
+<div class="table-wrap" style="border:0">
+<table class="table">
+  <thead><tr><th>Item</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Total</th></tr></thead>
+  <tbody>
+  {% for item in order.items.all %}
+    <tr><td>{{ item.product_name }}{% if item.sku %}<div class="muted small">SKU {{ item.sku }}</div>{% endif %}</td><td class="num">{{ item.unit_price|inr }}</td><td class="num">{{ item.quantity }}</td><td class="num">{{ item.line_total|inr }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr><td colspan="3" class="right muted">Subtotal</td><td class="num">{{ order.subtotal|inr }}</td></tr>
+    <tr><td colspan="3" class="right muted">Delivery</td><td class="num">{% if order.delivery_charge %}{{ order.delivery_charge|inr }}{% else %}Free{% endif %}</td></tr>
+    {% if order.discount %}<tr><td colspan="3" class="right muted">You saved</td><td class="num" style="color:var(--mint)">{{ order.discount|inr }}</td></tr>{% endif %}
+    <tr><td colspan="3" class="right"><strong>Total</strong></td><td class="num"><strong>{{ order.total|inr }}</strong></td></tr>
+  </tfoot>
+</table>
+</div>

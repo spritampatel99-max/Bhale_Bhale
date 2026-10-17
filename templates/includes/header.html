@@ -1,0 +1,49 @@
+{% load static %}
+<div class="announce"><div class="container">
+  <span><strong>Free delivery</strong> on orders above &#8377;999</span>
+  <span>Demo store &middot; no real payments are taken</span>
+</div></div>
+<header class="site-header">
+  <div class="container header-main">
+    <a class="brand" href="{% url 'catalog:home' %}" aria-label="NovaMart home">
+      <img src="{% static 'images/logo.svg' %}" alt="" width="36" height="36"><span>Nova<b>Mart</b></span>
+    </a>
+    <form class="search" action="{% url 'catalog:list' %}" method="get" role="search">
+      <label class="sr-only" for="site-search">Search products</label>
+      <input id="site-search" type="search" name="q" value="{{ q|default:'' }}" placeholder="Search for headphones, sneakers, notebooks&hellip;" autocomplete="off" maxlength="100">
+      <button type="submit" aria-label="Search"><svg class="icon"><use href="#i-search"/></svg></button>
+    </form>
+    <div class="header-actions">
+      {% if user.is_authenticated %}
+      <div class="dropdown" data-dropdown>
+        <button type="button" class="icon-btn" data-dropdown-toggle aria-expanded="false" aria-haspopup="true">
+          <svg class="icon"><use href="#i-user"/></svg><span class="label-text">{{ user.first_name|default:user.username }}</span>
+          <svg class="icon" style="width:1em;height:1em"><use href="#i-chevron"/></svg>
+        </button>
+        <div class="dropdown-panel">
+          <div class="who"><strong>{{ user.display_name }}</strong><small>@{{ user.username }}</small></div>
+          {% if user.is_admin_role %}<a href="{% url 'dashboard:home' %}"><svg class="icon"><use href="#i-chart"/></svg>Admin dashboard</a>{% endif %}
+          <a href="{% url 'accounts:account' %}"><svg class="icon"><use href="#i-user"/></svg>My account</a>
+          <a href="{% url 'orders:history' %}"><svg class="icon"><use href="#i-package"/></svg>My orders</a>
+          <a href="{% url 'accounts:addresses' %}"><svg class="icon"><use href="#i-pin"/></svg>Addresses</a>
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit"><svg class="icon"><use href="#i-logout"/></svg>Log out</button></form>
+        </div>
+      </div>
+      {% else %}
+      <a class="icon-btn" href="{% url 'accounts:login' %}"><svg class="icon"><use href="#i-user"/></svg><span class="label-text">Sign in</span></a>
+      {% endif %}
+      <a class="icon-btn cart-link" href="{% url 'cart:detail' %}" aria-label="Shopping cart, {{ cart_count }} item{{ cart_count|pluralize }}">
+        <svg class="icon"><use href="#i-cart"/></svg><span class="label-text">Cart</span><span class="cart-badge" data-cart-count>{{ cart_count }}</span>
+      </a>
+      <button type="button" class="icon-btn menu-toggle" data-toggle="#cat-nav" aria-expanded="false" aria-controls="cat-nav" aria-label="Browse categories"><svg class="icon"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+  <nav class="cat-nav" id="cat-nav" aria-label="Product categories">
+    <div class="container"><ul>
+      <li><a href="{% url 'catalog:list' %}" {% if request.resolver_match.url_name == 'list' and not request.GET.category %}aria-current="page"{% endif %}>All products</a></li>
+      {% for c in nav_categories %}
+      <li><a href="{{ c.get_absolute_url }}" {% if category and category.pk == c.pk %}aria-current="page"{% endif %}>{{ c.name }}</a></li>
+      {% endfor %}
+    </ul></div>
+  </nav>
+</header>

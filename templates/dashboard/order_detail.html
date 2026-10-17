@@ -1,0 +1,22 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block heading %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="page-actions"><a href="{% url 'dashboard:orders' %}">&larr; All orders</a>
+  <div class="row"><span class="badge {% status_class order.status %}">{{ order.get_status_display }}</span><span class="badge {% status_class order.payment_status %}">Payment {{ order.get_payment_status_display }}</span>{% if order.is_demo %}<span class="badge muted">demo order</span>{% endif %}</div></div>
+<div class="cols-3-2">
+  <section class="panel"><h2>Items</h2>{% include "orders/_order_items.html" %}</section>
+  <div class="stack">
+    <section class="panel"><h2>Update status</h2>
+      <form method="post" data-once>{% csrf_token %}
+        <div class="field"><label for="id_status">Order status</label><select class="input select" name="status" id="id_status">{% for v, l in form.fields.status.choices %}<option value="{{ v }}" {% if order.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <button class="btn btn-dark" type="submit">Save status</button>
+        <p class="help" style="margin-top:.8rem">Cancelling returns the items to stock. Reopening a cancelled order takes them out again (needs enough stock). Delivering a COD order marks it paid.</p>
+      </form></section>
+    <section class="panel"><h2>Customer</h2><dl class="kv"><dt>Account</dt><dd><a href="{% url 'dashboard:customer_detail' order.customer.pk %}">@{{ order.customer.username }}</a></dd><dt>Name</dt><dd>{{ order.ship_full_name }}</dd><dt>Phone</dt><dd>{{ order.ship_phone }}</dd><dt>Email</dt><dd>{{ order.ship_email|default:"-" }}</dd></dl></section>
+    <section class="panel"><h2>Ship to</h2><p style="margin:0">{% for l in order.shipping_lines %}{{ l }}<br>{% endfor %}</p></section>
+    <section class="panel"><h2>Payment</h2><p style="margin:0">{{ order.get_payment_method_display }}</p></section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{% if editing %}Edit{% else %}Add{% endif %} address · NovaMart{% endblock %}
+{% block content %}
+<div class="container" style="max-width:760px">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li><a href="{% url 'accounts:addresses' %}">Addresses</a></li><li aria-current="page">{% if editing %}Edit{% else %}Add{% endif %}</li></ol></nav>
+  <section class="card">
+    <h1 style="font-size:1.6rem">{% if editing %}Edit address{% else %}Add a new address{% endif %}</h1>
+    <form method="post" data-once novalidate>
+      {% csrf_token %}
+      <div class="form-grid">
+        {% for f in form %}<div class="field {% if f.errors %}has-error{% endif %} {% if f.name in 'line1 line2 is_default' %}full{% endif %}">
+          {% if f.name == 'is_default' %}<div class="check-row">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label></div>{% else %}<label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% endif %}{{ f.errors }}</div>{% endfor %}
+      </div>
+      <div class="row"><button class="btn btn-primary" type="submit">Save address</button><a class="btn btn-ghost" href="{% url 'accounts:addresses' %}">Cancel</a></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}{{ customer.username }}{% endblock %}
+{% block heading %}Customer: {{ customer.display_name }}{% endblock %}
+{% block content %}
+<div class="page-actions"><a href="{% url 'dashboard:customers' %}">&larr; All customers</a>
+  <form method="post" action="{% url 'dashboard:customer_toggle' customer.pk %}" data-confirm="{% if customer.is_active %}Deactivate this account? They will not be able to sign in.{% else %}Reactivate this account?{% endif %}">{% csrf_token %}
+    <button class="btn {% if customer.is_active %}btn-danger{% else %}btn-dark{% endif %} btn-sm" type="submit">{% if customer.is_active %}Deactivate account{% else %}Reactivate account{% endif %}</button></form></div>
+<div class="cols-2">
+  <section class="panel"><h2>Account</h2><dl class="kv"><dt>Username</dt><dd>@{{ customer.username }}</dd><dt>Name</dt><dd>{{ customer.get_full_name|default:"-" }}</dd><dt>Email</dt><dd>{{ customer.email|default:"-" }}</dd><dt>Phone</dt><dd>{{ customer.phone|default:"-" }}</dd><dt>Registered</dt><dd>{{ customer.date_joined|date:"d M Y, h:i A" }}</dd><dt>Last login</dt><dd>{{ customer.last_login|date:"d M Y, h:i A"|default:"Never" }}</dd><dt>Status</dt><dd>{% if customer.is_active %}Active{% else %}Deactivated{% endif %}</dd><dt>Lifetime spend</dt><dd>{{ spent|inr }}</dd></dl>
+  <p class="help" style="margin-top:1rem">Passwords are stored as one-way hashes and can never be viewed.</p></section>
+  <section class="panel"><h2>Saved addresses</h2>{% for a in addresses %}<p>{{ a.line1 }}, {{ a.city }}, {{ a.state }} {{ a.postal_code }}{% if a.is_default %} <span class="badge ok">default</span>{% endif %}</p>{% empty %}<p class="muted">None saved.</p>{% endfor %}</section>
+</div>
+<section class="panel"><h2>Order history</h2>
+<div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th class="num">Total</th></tr></thead><tbody>
+{% for o in orders %}<tr><td><a href="{% url 'dashboard:order_detail' o.order_number %}">{{ o.order_number }}</a></td><td>{{ o.created_at|date:"d M Y" }}</td><td><span class="badge {% status_class o.status %}">{{ o.get_status_display }}</span></td><td class="num">{{ o.total|inr }}</td></tr>
+{% empty %}<tr><td colspan="4" class="muted">No orders yet.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

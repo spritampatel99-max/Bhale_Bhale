@@ -1,0 +1,21 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}Orders{% endblock %}
+{% block heading %}Orders{% endblock %}
+{% block content %}
+<form class="filter-bar" method="get">
+  <div class="f"><label for="q">Order # or username</label><input class="input" id="q" name="q" value="{{ q }}" placeholder="NM-250101-…"></div>
+  <div class="f"><label for="status">Status</label><select class="input select" id="status" name="status"><option value="">All statuses</option>{% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="f"><label for="from">From</label><input class="input" type="date" id="from" name="from" value="{{ date_from }}"></div>
+  <div class="f"><label for="to">To</label><input class="input" type="date" id="to" name="to" value="{{ date_to }}"></div>
+  <button class="btn btn-dark btn-sm" type="submit">Apply</button><a class="btn btn-ghost btn-sm" href="{% url 'dashboard:orders' %}">Reset</a>
+</form>
+<div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Date</th><th class="num">Items</th><th class="num">Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
+{% for o in page %}
+<tr><td><a href="{% url 'dashboard:order_detail' o.order_number %}"><strong>{{ o.order_number }}</strong></a>{% if o.is_demo %} <span class="badge muted">demo</span>{% endif %}</td>
+<td>{{ o.customer.username }}</td><td>{{ o.created_at|date:"d M Y, h:i A" }}</td><td class="num">{{ o.item_count }}</td><td class="num">{{ o.total|inr }}</td>
+<td><span class="badge {% status_class o.payment_status %}">{{ o.get_payment_status_display }}</span></td><td><span class="badge {% status_class o.status %}">{{ o.get_status_display }}</span></td></tr>
+{% empty %}<tr><td colspan="7" class="center muted" style="padding:2rem">No orders found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

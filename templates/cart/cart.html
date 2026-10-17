@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}Your cart · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li aria-current="page">Cart</li></ol></nav>
+  <div class="page-head"><h1>Your cart</h1></div>
+
+  {% if items %}
+  <div class="cart-layout">
+    <div class="cart-list">
+      {% for item in items %}
+      <div class="cart-row" data-cart-row>
+        <a href="{{ item.product.get_absolute_url }}"><img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" onerror="this.onerror=null;this.src='{% static 'images/placeholders/product.svg' %}'"></a>
+        <div>
+          <h3><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
+          <div class="muted small">{{ item.product.price|inr }} each{% if item.product.has_discount %} <span class="price-off">&middot; {{ item.product.discount_percent }}% off</span>{% endif %}</div>
+          {% if item.quantity > item.product.stock %}<div class="stock-note out">Only {{ item.product.stock }} left, please reduce quantity</div>{% endif %}
+          <form method="post" action="{% url 'cart:remove' item.pk %}" data-cart-remove style="margin-top:.4rem">{% csrf_token %}<button class="link-btn remove" type="submit"><svg class="icon" style="width:1em;height:1em"><use href="#i-trash"/></svg> Remove</button></form>
+        </div>
+        <form method="post" action="{% url 'cart:update' item.pk %}" data-cart-update class="qty">
+          {% csrf_token %}
+          <button type="submit" name="action" value="dec" aria-label="Decrease quantity of {{ item.product.name }}"><svg class="icon"><use href="#i-minus"/></svg></button>
+          <output data-qty aria-live="polite" style="min-width:2rem;text-align:center;font-weight:700">{{ item.quantity }}</output>
+          <button type="submit" name="action" value="inc" aria-label="Increase quantity of {{ item.product.name }}"><svg class="icon"><use href="#i-plus"/></svg></button>
+        </form>
+        <div class="line-total" data-line-total>{{ item.line_total|inr }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <aside class="summary" aria-label="Order summary">
+      <h2 style="font-size:1.2rem">Order summary</h2>
+      <div class="free-ship" data-free-ship {% if not totals.free_delivery_gap %}hidden{% endif %}>Add <strong data-sum="gap">{{ totals.free_delivery_gap|inr }}</strong> more for free delivery.</div>
+      <dl>
+        <div class="line"><dt>Subtotal ({{ totals.count }} item{{ totals.count|pluralize }})</dt><dd data-sum="subtotal">{{ totals.subtotal|inr }}</dd></div>
+        <div class="line save" data-sum-row="savings" {% if not totals.savings %}hidden{% endif %}><dt>You save (vs list price)</dt><dd data-sum="savings">{{ totals.savings|inr }}</dd></div>
+        <div class="line"><dt>Delivery</dt><dd data-sum="delivery">{% if totals.delivery %}{{ totals.delivery|inr }}{% else %}Free{% endif %}</dd></div>
+        <div class="line total"><dt>Total</dt><dd data-sum="total">{{ totals.total|inr }}</dd></div>
+      </dl>
+      <a class="btn btn-primary btn-lg btn-block" href="{% url 'orders:checkout' %}">Proceed to checkout <svg class="icon"><use href="#i-arrow"/></svg></a>
+      <p class="center" style="margin:1rem 0 0"><a href="{% url 'catalog:list' %}">Continue shopping</a></p>
+    </aside>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="art"><svg class="icon"><use href="#i-cart"/></svg></div>
+    <h2>Your cart is empty</h2>
+    <p>Looks like you haven't added anything yet. Have a browse, there's plenty to like.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'catalog:list' %}">Start shopping</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

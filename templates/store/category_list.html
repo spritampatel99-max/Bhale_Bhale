@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Categories · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li aria-current="page">Categories</li></ol></nav>
+  <div class="page-head"><h1>All categories</h1></div>
+  <div class="cat-tiles" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+    {% for c in categories %}<a class="cat-tile" href="{{ c.get_absolute_url }}"><img src="{{ c.image_url }}" alt="" loading="lazy"><span>{{ c.name }}</span></a>{% endfor %}
+  </div>
+</div>
+{% endblock %}

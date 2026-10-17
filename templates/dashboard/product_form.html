@@ -1,0 +1,36 @@
+{% extends "dashboard/base.html" %}
+{% load store_tags %}
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} product{% endblock %}
+{% block heading %}{% if product %}Edit product{% else %}Add product{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel form-panel" data-once novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="form-grid">
+    {% for f in form %}
+      {% if f.name == 'image' %}
+      <div class="field full {% if f.errors %}has-error{% endif %}"><label for="{{ f.id_for_label }}">Main photo</label>
+        {% if product and product.image %}<div class="img-preview"><img src="{{ product.image_url }}" alt="Current main photo"><span class="muted small">Current photo. Choose a file to replace it.</span></div>{% endif %}
+        <input type="file" name="image" id="{{ f.id_for_label }}" class="input file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <div class="help">JPG, PNG, WebP or GIF, up to 3 MB.</div>{{ f.errors }}</div>
+      {% elif f.name == 'extra_images' %}
+      <div class="field full {% if f.errors %}has-error{% endif %}"><label for="{{ f.id_for_label }}">Additional photos</label>
+        {% if product %}<div class="img-preview">{% for img in product.extra_images.all %}<div class="extra-img"><img src="{{ img.image_url }}" alt="{{ img.alt_text }}"></div>{% endfor %}</div>{% endif %}
+        {{ f }}<div class="help">Optional. Select several files at once (max 8 per product).</div>{{ f.errors }}</div>
+      {% elif f.name in 'is_active is_featured' %}
+      <div class="field"><div class="check-row">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label></div>{{ f.errors }}</div>
+      {% else %}
+      <div class="field {% if f.name == 'name' or f.name == 'description' %}full{% endif %} {% if f.errors %}has-error{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% if f.help_text %}<div class="help">{{ f.help_text }}</div>{% endif %}{{ f.errors }}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="row"><button class="btn btn-primary" type="submit">Save product</button><a class="btn btn-ghost" href="{% url 'dashboard:products' %}">Cancel</a></div>
+</form>
+{% if product and product.extra_images.exists %}
+<section class="panel form-panel" style="margin-top:1rem"><h2>Remove additional photos</h2>
+  <div class="img-preview">{% for img in product.extra_images.all %}
+    <form method="post" action="{% url 'dashboard:product_image_delete' product.pk img.pk %}" class="extra-img" data-confirm="Remove this photo?">{% csrf_token %}<img src="{{ img.image_url }}" alt="{{ img.alt_text }}"><button type="submit" aria-label="Remove photo">&times;</button></form>
+  {% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

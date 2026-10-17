@@ -1,0 +1,19 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{% if category %}Edit{% else %}Add{% endif %} category{% endblock %}
+{% block heading %}{% if category %}Edit category{% else %}Add category{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel form-panel" data-once novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+  {% for f in form %}
+  <div class="field {% if f.errors %}has-error{% endif %}">
+    {% if f.name == 'is_active' %}<div class="check-row">{{ f }}<label for="{{ f.id_for_label }}">{{ f.label }}</label></div>
+    {% else %}<label for="{{ f.id_for_label }}">{{ f.label }}</label>
+      {% if f.name == 'image' and category and category.image %}<div class="img-preview"><img src="{{ category.image_url }}" alt="Current image"></div>{% endif %}
+      {{ f }}{% endif %}
+    {% if f.help_text %}<div class="help">{{ f.help_text }}</div>{% endif %}{{ f.errors }}
+  </div>
+  {% endfor %}
+  <div class="row"><button class="btn btn-primary" type="submit">Save category</button><a class="btn btn-ghost" href="{% url 'dashboard:categories' %}">Cancel</a></div>
+</form>
+{% endblock %}

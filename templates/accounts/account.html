@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}My account · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li aria-current="page">My account</li></ol></nav>
+  <div class="account-layout">
+    {% include "accounts/_side_nav.html" with active="profile" %}
+    <div class="stack">
+      <section class="card">
+        <h2>Profile</h2>
+        <p class="muted">Signed in as <strong>@{{ user.username }}</strong> &middot; {{ user.get_role_display }} &middot; member since {{ user.date_joined|date:"M Y" }}</p>
+        <form method="post" data-once novalidate>
+          {% csrf_token %}
+          <div class="form-grid">
+            {% for f in form %}<div class="field {% if f.errors %}has-error{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{{ f.errors }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-dark" type="submit">Save changes</button>
+        </form>
+      </section>
+      <section class="card">
+        <div class="row between"><h2 style="margin:0">Recent orders</h2><a href="{% url 'orders:history' %}">View all</a></div>
+        {% for o in recent_orders %}
+        <div class="row between" style="padding:.7rem 0;border-bottom:1px solid var(--line)"><a href="{{ o.get_absolute_url }}">{{ o.order_number }}</a><span class="badge {% status_class o.status %}">{{ o.get_status_display }}</span><strong>{{ o.total|inr }}</strong></div>
+        {% empty %}<p class="muted" style="margin-top:1rem">No orders yet.</p>{% endfor %}
+      </section>
+      <section class="card"><div class="row between"><div><h2 style="margin:0">Addresses</h2><span class="muted">{{ address_count }} saved</span></div><a class="btn" href="{% url 'accounts:addresses' %}">Manage addresses</a></div></section>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}My orders · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li aria-current="page">My orders</li></ol></nav>
+  <div class="account-layout">
+    {% include "accounts/_side_nav.html" with active="orders" %}
+    <div>
+      <h1 style="font-size:1.8rem">My orders</h1>
+      {% for order in page %}
+      <article class="order-card">
+        <div class="row between">
+          <div><a href="{{ order.get_absolute_url }}"><strong>{{ order.order_number }}</strong></a><div class="muted small">{{ order.created_at|date:"d M Y, h:i A" }}</div></div>
+          <div class="row"><span class="badge {% status_class order.status %}">{{ order.get_status_display }}</span><strong>{{ order.total|inr }}</strong></div>
+        </div>
+        <div class="row between">
+          <div class="thumbs">{% for item in order.items.all|slice:":5" %}{% if item.product %}<img src="{{ item.product.image_url }}" alt="{{ item.product_name }}">{% endif %}{% endfor %}</div>
+          <a class="btn btn-sm" href="{{ order.get_absolute_url }}">View details</a>
+        </div>
+      </article>
+      {% empty %}
+      <div class="empty-state"><div class="art"><svg class="icon"><use href="#i-package"/></svg></div><h2>No orders yet</h2><p>When you place an order it will show up here.</p><a class="btn btn-primary" href="{% url 'catalog:list' %}">Start shopping</a></div>
+      {% endfor %}
+      {% include "includes/pagination.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load store_tags %}
+{% block title %}Order placed · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="confirm">
+    <div class="tick"><svg class="icon"><use href="#i-check"/></svg></div>
+    <h1>Thank you, {{ order.ship_full_name }}!</h1>
+    <p>Your order has been placed. Keep this number for reference:</p>
+    <div class="order-no">{{ order.order_number }}</div>
+    <div class="card" style="text-align:left">
+      {% include "orders/_order_items.html" %}
+      <hr>
+      <div class="row between"><span class="muted">Payment</span><span>{{ order.get_payment_method_display }} &middot; {{ order.get_payment_status_display }}</span></div>
+      <div class="row between"><span class="muted">Ship to</span><span style="text-align:right">{% for l in order.shipping_lines %}{{ l }}<br>{% endfor %}</span></div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:1.5rem">
+      <a class="btn btn-dark" href="{{ order.get_absolute_url }}">View order</a>
+      <a class="btn" href="{% url 'catalog:list' %}">Continue shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

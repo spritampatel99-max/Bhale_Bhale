@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static store_tags %}
+{% block title %}Checkout · NovaMart{% endblock %}
+{% block content %}
+<div class="container">
+  <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li><a href="{% url 'catalog:home' %}">Home</a></li><li><a href="{% url 'cart:detail' %}">Cart</a></li><li aria-current="page">Checkout</li></ol></nav>
+  <div class="page-head"><h1>Checkout</h1></div>
+  <form method="post" class="checkout-layout" data-once novalidate>
+    {% csrf_token %}
+    <div class="stack">
+      <section class="card">
+        <h2>Shipping details</h2>
+        {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+        {% if saved_addresses %}
+        <div class="saved-addresses" aria-label="Saved addresses">
+          {% for a in saved_addresses %}
+          <button type="button" class="btn btn-sm" data-fill-address='{"ship_full_name": "{{ a.full_name|escapejs }}", "ship_phone": "{{ a.phone|escapejs }}", "ship_line1": "{{ a.line1|escapejs }}", "ship_line2": "{{ a.line2|escapejs }}", "ship_city": "{{ a.city|escapejs }}", "ship_state": "{{ a.state|escapejs }}", "ship_postal_code": "{{ a.postal_code|escapejs }}"}'><svg class="icon"><use href="#i-pin"/></svg>{{ a.label }}: {{ a.city }}</button>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-grid">
+          {% for f in form %}{% if f.name != 'payment_method' and f.name != 'save_address' %}
+          <div class="field {% if f.errors %}has-error{% endif %} {% if f.name in 'ship_line1 ship_line2' %}full{% endif %}">
+            <label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{{ f.errors }}
+          </div>{% endif %}{% endfor %}
+        </div>
+        <div class="check-row">{{ form.save_address }}<label for="{{ form.save_address.id_for_label }}">{{ form.save_address.label }}</label></div>
+      </section>
+
+      <section class="card">
+        <h2>Payment method</h2>
+        <div class="demo-note">This is a prototype. No real payment is processed and no card details are collected.</div>
+        <div class="pay-options">
+          {% for radio in form.payment_method %}
+          <label class="pay-option" for="{{ radio.id_for_label }}">
+            {{ radio.tag }}
+            <div><strong>{{ radio.choice_label }}</strong>
+              <span>{% if radio.data.value == 'cod' %}Pay in cash when your order arrives. Order starts as pending.{% else %}Marks the order as paid instantly so you can try the full flow.{% endif %}</span></div>
+          </label>
+          {% endfor %}
+        </div>
+        {{ form.payment_method.errors }}
+      </section>
+    </div>
+
+    <aside class="summary" aria-label="Order summary">
+      <h2 style="font-size:1.2rem">Order summary</h2>
+      {% for item in items %}
+      <div class="mini-item">
+        <img src="{{ item.product.image_url }}" alt="">
+        <div>{{ item.product.name }}<div class="muted small">Qty {{ item.quantity }}</div></div>
+        <strong>{{ item.line_total|inr }}</strong>
+      </div>
+      {% endfor %}
+      <hr>
+      <dl>
+        <div class="line"><dt>Subtotal</dt><dd>{{ totals.subtotal|inr }}</dd></div>
+        {% if totals.savings %}<div class="line save"><dt>You save</dt><dd>{{ totals.savings|inr }}</dd></div>{% endif %}
+        <div class="line"><dt>Delivery</dt><dd>{% if totals.delivery %}{{ totals.delivery|inr }}{% else %}Free{% endif %}</dd></div>
+        <div class="line total"><dt>Total</dt><dd>{{ totals.total|inr }}</dd></div>
+      </dl>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Place order</button>
+      <p class="small muted center" style="margin:.8rem 0 0">Totals are recalculated securely on our server when you place the order.</p>
+    </aside>
+  </form>
+</div>
+{% endblock %}
